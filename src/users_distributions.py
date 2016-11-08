@@ -115,10 +115,12 @@ def test_plot_data():
 
 
 def plot_data(lab='', xlab='# jobs sent', ylab = '# of users', \
-	fname = 'all_jobs_per_user.eps', col='ForestGreen', \
+	fname = 'distr_of_distr_all_jobs_per_user.eps', col='ForestGreen', \
 	s=12, Move=0.00003, input_file='all_job_users.csv'):
 
 	d = create_distribution(read_in_data(input_file))
+
+	d = create_distribution(d.values())
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
