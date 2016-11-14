@@ -63,9 +63,6 @@ def read_in_data_per_job(f_in_1 = 'plug/plug_per_job.csv', \
 		else:
 			cnt += 1
 
-		if job == '9868575':
-			print per_job[job] 
-
 	print 'No dur data for %d jobs' % cnt
 
 	return per_job
@@ -107,15 +104,63 @@ def read_in_data_per_step(f_in_1 = 'plug/plug_per_job.csv', \
 		else:
 			cnt += 1
 
-		if step == '9868575':
-			print per_step[step] 
-
 	print 'No dur data for %d steps' % cnt
 
 	return per_step
 
 
+def read_in_data_per_step_per_state(f_in_1 = 'plug/plug_per_job.csv', \
+	f_in_2 = 'jobs/state_duration/state_duration_job_steps.csv'):
 
+	plug_per_step= defaultdict(int)
+
+	with open(f_in_1, 'r') as f1:
+		for line in f1:
+			try:
+				n1, job_id, n2, plug, n3 = line.strip().split('"')
+			except ValueError:
+				print plug
+			plug_per_step[job_id] = int(plug)
+
+	distr_completed = defaultdict(int)
+	distr_cancelled = defaultdict(int)
+	distr_timeout = defaultdict(int)
+	distr_failed = defaultdict(int)
+	i = 0
+
+	with open(f_in_2, 'r') as f:
+		for line in f:
+			i += 1
+			n0, JobID, n1, elapsed, n2, state, n3 = line.split('"')
+			elapsed = int(elapsed)
+			JobID = JobID
+			state = state
+			if 'CANCELLED' in state:
+				state = 'CANCELLED'
+			if state == 'CANCELLED':
+				distr_cancelled[JobID] = elapsed
+			elif state == 'COMPLETED':
+				distr_completed[JobID] = elapsed
+			elif state == 'FAILED':
+				distr_failed[JobID] = elapsed
+			else:
+				distr_timeout[JobID] = elapsed
+
+	# distr_cancelled, distr_timeout, distr_failed, distr_completed
+
+	per_step = defaultdict(tuple)
+
+	cnt = 0
+
+	for step in plug_per_step:
+		if step in distr_cancelled:
+			per_step[step] = (plug_per_step[step], distr_cancelled[step])
+		else:
+			cnt += 1
+
+	print 'No dur data for %d steps' % cnt
+
+	return per_step
 
 def correlate_data(data):
 
@@ -131,8 +176,14 @@ def correlate_data(data):
 	print 'Cross-correlation ', np.correlate(v1, v2)
 	print 'Pearson  ', np.corrcoef(v1, v2)
 
+"""
+print 'Per Step'
 data = read_in_data_per_job()
 correlate_data(data)
-print
+print 'Per job'
 data2 = read_in_data_per_step()
 correlate_data(data2)
+"""
+print 'Per step CANCELLED'
+data1_state = read_in_data_per_step_per_state()
+correlate_data(data1_state)
