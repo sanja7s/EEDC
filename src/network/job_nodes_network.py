@@ -67,6 +67,11 @@ def read_in_data_and_save_edge_list(f_in = 'job_node_list_network.csv', \
 
 			parsed_node_list = parse_node_list(node_list)
 			edge_list_from_node_list(edge_list, parsed_node_list)
+			assert len(parsed_node_list) == int(num_nodes)
+
+	#save_edge_list(f_out, edge_list)
+
+def save_edge_list(f_out, edge_list):
 
 	i = 0
 	with open(f_out, 'w') as fo:
@@ -88,8 +93,12 @@ def analyze_graph_from_edge_list(f_in='co-occurrence_edge_list.csv', \
 	conn_comp = sorted(nx.connected_components(G), key = len, reverse=True)
 	print 'Num of connected components ', len(conn_comp)
 
+	# save_network(f_out_cc, conn_comp)
+
+
+def save_network(f_out_cc, conn_comp):
 	fcc = open(f_out_cc, 'w')
-	conn_comp_node_list = defaultdict(list)
+
 	i = 0
 	for comp in conn_comp:
 		print len(comp)
