@@ -56,14 +56,16 @@ def read_in_plug_data(node):
 def read_in_num_jobs_data(node):
 
 	f_in = 'node_' + node +'_plug.csv'
-
 	distr = defaultdict(int)
 	with open(f_in, 'r') as f:
 		for line in f:
 			n, n, n, t, n, n, n, jobs_list, n6 = line.strip().split('"')
 			t = dt.datetime.fromtimestamp(int(t))
 			jobs = jobs_list.split(',')
-			distr[t] = len(jobs)
+			if jobs_list == "":
+				distr[t] = 0
+			else:
+				distr[t] = len(jobs)
 	return distr
 
 def read_in_CPU_data(node):
@@ -160,7 +162,7 @@ def plot_plug_timeline_v2(node):
 	
 	#ts = ts.cumsum()
 
-	ts.plot()
+	ts.plot(color = 'darkblue')
 
 	#ax.plot(X, values)
 
@@ -171,9 +173,22 @@ def plot_plug_timeline_v2(node):
 
 	plt.xlim(pd.to_datetime(start_time), pd.to_datetime(end_time))
 
+	ymin = 240
+	ymax = 280
+	if min(values) < 160:
+		ymin = min(values) - 10
+	if max(values) > 250:
+		ymax = max(values) + 10
+
+	plt.ylim(ymin, ymax)
+
 	#plt.show()
 
-	plt.savefig('plug_timeline_node_' + node + '.png')
+	cwd = os.getcwd()
+	print cwd
+
+
+	plt.savefig(cwd + '/multiple_v2/plug_only/plug_timeline_node_' + node + '_v2.png')
 
 	return fig, ax, plt
 
@@ -191,7 +206,7 @@ def plot_plug_and_num_jobs_timeline(node):
 	print start_time, end_time
 	print min(values), max(values)
 
-	fig, ax1, plt = plot_plug_timeline(node)
+	fig, ax1, plt = plot_plug_timeline_v2(node)
 
 	ax2 = ax1.twinx()
 	ax2.scatter(X, values,
@@ -206,7 +221,10 @@ def plot_plug_and_num_jobs_timeline(node):
 	for tl in ax2.get_yticklabels():
 		tl.set_color('r')
 
-	plt.savefig('num_jobs_and_plug_timeline_node_' + node + '.png')
+	cwd = os.getcwd()
+	print cwd
+
+	plt.savefig(cwd + '/multiple_v2/num_jobs_and_plug_timeline_node_' + node + '_v2.png')
 
 def plot_plug_and_CPUs_timeline(node):
 	print 'Plotting CPUs values'
@@ -381,8 +399,34 @@ plot_plug_and_rb_timeline('c34')
 """
 
 
-#plot_plug_timeline('c735')
-#plot_plug_and_num_jobs_timeline('c424')
+"""
+# for the nodes running only one job
+plot_plug_timeline('c424')
+plot_plug_and_num_jobs_timeline('c424')
+"""
 
-plot_plug_and_num_jobs_timeline('c138')
-plot_plug_timeline_v2('c138')
+
+
+# this is for the only node that did not run any jobs
+#plot_plug_and_num_jobs_timeline('c42')
+#plot_plug_timeline_v2('c42')
+
+
+
+for node in [ 'c31', 'c34', 'c42', 'c48', 'c63', 'c329', 'c424', \
+		'c577', 'c578', 'c604', 'c672', 'c735', 'c750']:		
+	#plot_plug_timeline_v2(node)
+	plot_plug_and_num_jobs_timeline(node)
+
+
+
+"""
+# for the nodes running only one unique (same) job all the time
+#plot_plug_timeline('c7')
+#plot_plug_and_num_jobs_timeline('c7')
+
+for node in [ 'c7', 'c6', 'c5', 'c4', 'c20', 'c9', 'c8', 'c19', 'c18', 'c13',\
+		'c12', 'c11', 'c10', 'c16']:		
+	plot_plug_timeline_v2(node)
+	#plot_plug_and_num_jobs_timeline(node)
+"""
