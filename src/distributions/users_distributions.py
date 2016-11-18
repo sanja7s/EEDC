@@ -15,7 +15,7 @@ from matplotlib import colors
 from mpl_toolkits.axes_grid import inset_locator 
 #matplotlib.style.use('ggplot')
 
-IN_DIR = "../data/users"
+IN_DIR = "../../data/users"
 os.chdir(IN_DIR)
 
 font = {'family' : 'sans-serif',
@@ -89,6 +89,8 @@ def simple_plot_data():
 	mu = np.mean(x)
 	sigma = np.std(x)
 	median = np.median(x)
+
+
 	
 	ax.scatter(x,y)
 
@@ -115,12 +117,12 @@ def test_plot_data():
 
 
 def plot_data(lab='', xlab='# jobs sent', ylab = '# of users', \
-	fname = 'distr_of_distr_all_jobs_per_user.eps', col='ForestGreen', \
+	fname = 'distr_all_jobs_per_user_v2.png', col='darkblue', \
 	s=12, Move=0.00003, input_file='all_job_users.csv'):
 
 	d = create_distribution(read_in_data(input_file))
 
-	d = create_distribution(d.values())
+	#d = create_distribution(d.values())
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -133,6 +135,9 @@ def plot_data(lab='', xlab='# jobs sent', ylab = '# of users', \
 	mu = np.mean(x)
 	sigma = np.std(x)
 	median = np.median(x)
+
+	pt = pd.DataFrame({'user # jobs':x})
+	print(pt.describe())
 	
 	ax.scatter(x,y,color=col,s=10.5,edgecolor='none')
 

@@ -74,8 +74,8 @@ def read_in_data(f_in = 'job_dur_per_user.csv'):
 
 	print user_avg_job_dur
 
-	return user_tot_job_dur.values()
-	#return user_avg_job_dur.values()
+	#return user_tot_job_dur.values()
+	return user_avg_job_dur.values()
 	
 
 
@@ -89,7 +89,7 @@ def create_distribution(x):
 
 	d = defaultdict(int)
 	for el in x:
-		d[int(el/86400)] += 1
+		d[int(el/360)] += 1
 	return d
 
 def test_plot_data():
@@ -113,8 +113,8 @@ def test_plot_data():
 
 #test_plot_data()
 
-def plot_data(lab='', xlab='tot job duration (day)', ylab = '# of users', \
-	fname = 'tot_job_dur_per_user_day.eps', col='dodgerblue', \
+def plot_data(lab='', xlab='avg job duration (hr)', ylab = '# of users', \
+	fname = 'avg_job_dur_per_user_hr.png', col='red', \
 	s=12, Move=0.00003):
 
 	d = create_distribution(read_in_data())
