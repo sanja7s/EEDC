@@ -145,32 +145,22 @@ def plot_plug_timeline(node):
 def plot_plug_timeline_v2(node):
 	print 'Plotting plug values'
 	d = read_in_plug_data(node)
-
 	dates = d.keys()
 	X = pd.to_datetime(dates)
 	values = [v if v > 0 else 0 for v in d.values()]
-
 	ts = pd.Series(values, index = X)
-
 	start_time = min(dates)
 	end_time = max(dates)
-
 	print start_time, end_time
 	print min(values), max(values)
 	
 	fig, ax = plt.subplots()
-	
-	#ts = ts.cumsum()
-
 	ts.plot(color = 'darkblue')
-
-	#ax.plot(X, values)
-
+	for tl in ax.get_yticklabels():
+		tl.set_color('darkblue')
 	fig.autofmt_xdate()
-
 	ax.set_xlabel('time')
-	ax.set_ylabel('plug value')
-
+	ax.set_ylabel('plug value', color='darkblue')
 	plt.xlim(pd.to_datetime(start_time), pd.to_datetime(end_time))
 
 	ymin = 240
@@ -179,17 +169,9 @@ def plot_plug_timeline_v2(node):
 		ymin = min(values) - 10
 	if max(values) > 250:
 		ymax = max(values) + 10
-
 	plt.ylim(ymin, ymax)
 
-	#plt.show()
-
-	cwd = os.getcwd()
-	print cwd
-
-
-	plt.savefig(cwd + '/multiple_v2/plug_only/plug_timeline_node_' + node + '_v2.png')
-
+	#plt.savefig(cwd + '/multiple_v2/plug_only/plug_timeline_node_' + node + '_v2.png')
 	return fig, ax, plt
 
 def plot_plug_and_num_jobs_timeline(node):
@@ -229,7 +211,6 @@ def plot_plug_and_num_jobs_timeline(node):
 def plot_plug_and_CPUs_timeline(node):
 	print 'Plotting CPUs values'
 	d = read_in_CPU_data(node)
-
 	dates = d.keys()
 	X = pd.to_datetime(dates)
 	values1 = []
@@ -245,37 +226,31 @@ def plot_plug_and_CPUs_timeline(node):
 		else:
 			v2 = 0
 		values2.append(v2)
-
 	start_time = min(dates)
 	end_time = max(dates)
-
 	print start_time, end_time
 	print 'Min and max CPU1 ', min(values1), max(values1)
 	print 'Min and max CPU2 ', min(values2), max(values2)
 
-	fig, ax1, plt = plot_plug_timeline(node)
-
+	fig, ax1, plt = plot_plug_timeline_v2(node)
 	ax2 = ax1.twinx()
-	ax2.scatter(X, values1,
-			   marker='s', color='red', s=4, label =  'CPU1')
-	ax2.scatter(X, values2,
-			   marker='s', color='magenta', s=4, label =  'CPU2')
-
+	ts1 = pd.Series(values1, index = X)
+	ax2.scatter(X, values1, marker='s', color='red', s=4, label =  'CPU1')
+	#ts1.plot(color='red', label =  'CPU1')
+	ts2 = pd.Series(values2, index = X)
+	ax2.scatter(X, values2, marker='s', color='magenta', s=4, label =  'CPU2')
+	#ts2.plot(color='magenta', label =  'CPU2')
 	ax2.set_ylabel('CPU values', color='red')
-
 	ya = ax2.get_yaxis()
 	ya.set_major_locator(MaxNLocator(integer=True))
-
 	plt.xlim(pd.to_datetime(start_time), pd.to_datetime(end_time))
 	for tl in ax2.get_yticklabels():
 		tl.set_color('r')
-
 	handles, labels = ax2.get_legend_handles_labels()
-	l = ax2.legend(handles, labels, loc=1)
+	l = ax2.legend(handles, labels, loc=3)
 	for text in l.get_texts():
 		text.set_color('gray')
-
-	plt.savefig('CPUs_plug_timeline_node_' + node + '.png')
+	plt.savefig('single_unique_jobs/CPU/CPUs_plug_timeline_node_' + node + '_v3.png')
 
 def plot_plug_and_MEM_timeline(node):
 	print 'Plotting DRAM values'
@@ -285,19 +260,6 @@ def plot_plug_and_MEM_timeline(node):
 	X = pd.to_datetime(dates)
 	values1 = [v[0] if v[0] > -1 else -1 for v in d.values()]
 	values2 = [v[1] if v[1] > -1 else -1 for v in d.values()]
-	"""
-	for el in d.values():
-		if el[0] > 0:
-			v1 = el[0]
-		else:
-			v1 = 0
-		values1.append(v1)
-		if el[1] > 0:
-			v2 = el[1]
-		else:
-			v2 = 0
-		values2.append(v2)
-	"""
 
 	start_time = min(dates)
 	end_time = max(dates)
@@ -315,9 +277,6 @@ def plot_plug_and_MEM_timeline(node):
 			   marker='s', color='olive', s=4, label =  'DRAM2')
 
 	ax2.set_ylabel('DRAM values', color='olive')
-
-	#ya = ax2.get_yaxis()
-	#ya.set_major_locator(MaxNLocator(integer=True))
 
 	plt.xlim(pd.to_datetime(start_time), pd.to_datetime(end_time))
 	for tl in ax2.get_yticklabels():
@@ -412,21 +371,21 @@ plot_plug_and_num_jobs_timeline('c424')
 #plot_plug_timeline_v2('c42')
 
 
-
+"""
+# for random nodes
 for node in [ 'c31', 'c34', 'c42', 'c48', 'c63', 'c329', 'c424', \
 		'c577', 'c578', 'c604', 'c672', 'c735', 'c750']:		
 	#plot_plug_timeline_v2(node)
 	plot_plug_and_num_jobs_timeline(node)
-
-
-
 """
+
+
+
 # for the nodes running only one unique (same) job all the time
 #plot_plug_timeline('c7')
 #plot_plug_and_num_jobs_timeline('c7')
 
-for node in [ 'c7', 'c6', 'c5', 'c4', 'c20', 'c9', 'c8', 'c19', 'c18', 'c13',\
-		'c12', 'c11', 'c10', 'c16']:		
-	plot_plug_timeline_v2(node)
+for node in ['c9', 'c10', 'c11', 'c12', 'c13', 'c16', 'c18', 'c19', 'c20']:		
+	#plot_plug_timeline_v2(node)
 	#plot_plug_and_num_jobs_timeline(node)
-"""
+	plot_plug_and_CPUs_timeline(node)
