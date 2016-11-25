@@ -19,6 +19,7 @@ matplotlib.style.use('ggplot')
 IN_DIR = "../../data/jobs"
 os.chdir(IN_DIR)
 
+# from Tapio
 def read_in_data_per_job(f_in = 'jobs_plug_per_core.csv'):
 
 	plug = []
@@ -43,6 +44,19 @@ def read_in_data_per_job(f_in = 'jobs_plug_per_core.csv'):
 
 	print len(plug), len(dur)
 	return plug, dur
+
+def single_node_jobs_in_the_timeframe(f_in = 'all_job_end_start_time_job_ids.csv'):
+
+	ss = ['9923129', '9917940', '9920409', '9899558', '9899559', \
+	'9918157', '9917887', '9923478', '9886105', '9923898']
+
+	#J.StartTS>=1467048960 and J.EndTS<=1467201193
+
+	with open(f_in, 'r') as f1:
+		for line in f1:
+			n, job_id, n, start_TS, n, end_TS, n = line.strip().split('"')
+			if job_id in ss: #and start_TS>=1467048960 and end_TS<=1467201193:
+				print job_id
 
 	
 def plot_data():
@@ -87,4 +101,6 @@ def correlate_data(data):
 	print 'Pearson  ', np.corrcoef(v1, v2)
 
 
-plot_data()
+#plot_data()
+
+single_node_jobs_in_the_timeframe()
