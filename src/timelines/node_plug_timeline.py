@@ -206,7 +206,7 @@ def plot_plug_and_num_jobs_timeline(node):
 	cwd = os.getcwd()
 	print cwd
 
-	plt.savefig(cwd + '/multiple_v2/num_jobs_and_plug_timeline_node_' + node + '_v2.png')
+	plt.savefig(cwd + '/lowest_norm_stdev/SandyBridge/num_jobs_and_plug_timeline_node_' + node + '_v2.png')
 
 def plot_plug_and_CPUs_timeline(node):
 	print 'Plotting CPUs values'
@@ -250,7 +250,7 @@ def plot_plug_and_CPUs_timeline(node):
 	l = ax2.legend(handles, labels, loc=3)
 	for text in l.get_texts():
 		text.set_color('gray')
-	plt.savefig('CPUs_plug_timeline_node_' + node + '.png')
+	plt.savefig('lowest_norm_stdev/SandyBridge/CPUs_plug_timeline_node_' + node + '.png')
 
 def plot_plug_and_MEM_timeline(node):
 	print 'Plotting DRAM values'
@@ -392,4 +392,28 @@ for node in ['c9', 'c10', 'c11', 'c12', 'c13', 'c16', 'c18', 'c19', 'c20']:
 	plot_plug_and_CPUs_timeline(node)
 """
 
-plot_plug_and_CPUs_timeline('c4')
+#plot_plug_and_CPUs_timeline('c4')
+
+"""
+# these nodes have the highest normalized stdev of plug
+for node in ['c849', 'c666', 'c747', 'c908', 'c658', 'c620', 'c85', 'c364']:		
+	#plot_plug_timeline_v2(node)
+	plot_plug_and_num_jobs_timeline(node)
+	plot_plug_and_CPUs_timeline(node)
+"""
+
+"""
+# these are some of the nodes that have the smallest normalized stdev of plug
+# SandyBridge
+for node in ['c423']:		
+	#plot_plug_timeline_v2(node)
+	plot_plug_and_num_jobs_timeline(node)
+	plot_plug_and_CPUs_timeline(node)
+"""
+
+
+
+
+
+
+
