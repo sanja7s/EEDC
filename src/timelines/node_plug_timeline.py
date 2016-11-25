@@ -250,7 +250,7 @@ def plot_plug_and_CPUs_timeline(node):
 	l = ax2.legend(handles, labels, loc=3)
 	for text in l.get_texts():
 		text.set_color('gray')
-	plt.savefig('single_unique_jobs/CPU/CPUs_plug_timeline_node_' + node + '_v3.png')
+	plt.savefig('CPUs_plug_timeline_node_' + node + '.png')
 
 def plot_plug_and_MEM_timeline(node):
 	print 'Plotting DRAM values'
@@ -385,7 +385,11 @@ for node in [ 'c31', 'c34', 'c42', 'c48', 'c63', 'c329', 'c424', \
 #plot_plug_timeline('c7')
 #plot_plug_and_num_jobs_timeline('c7')
 
+"""
 for node in ['c9', 'c10', 'c11', 'c12', 'c13', 'c16', 'c18', 'c19', 'c20']:		
 	#plot_plug_timeline_v2(node)
 	#plot_plug_and_num_jobs_timeline(node)
 	plot_plug_and_CPUs_timeline(node)
+"""
+
+plot_plug_and_CPUs_timeline('c4')
