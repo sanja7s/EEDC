@@ -15,7 +15,7 @@ from matplotlib import colors
 from mpl_toolkits.axes_grid import inset_locator 
 #matplotlib.style.use('ggplot')
 
-IN_DIR = "../../data/users"
+IN_DIR = "../data/plug"
 os.chdir(IN_DIR)
 
 font = {'family' : 'sans-serif',
@@ -36,27 +36,32 @@ matplotlib.rc('grid', **grid)
 matplotlib.rc('lines', **lines)
 #matplotlib.rc('ticks', **ticks)
 
-def read_in_data(f_in = 'all_job_users.csv'):
+def read_in_data(f_in = 'plug_per_job.csv'):
 
-	distr = defaultdict(int)
+	distr_per_step = []
+	distr_per_job = defaultdict(int)
 	with open(f_in, 'r') as f:
 		for line in f:
 			try:
-				n1, job_id, n2, user_id, n3 = line.strip().split('"')
-				distr[user_id] += 1 
+				n1, job_id, n2, plug, n3 = line.strip().split('"')
+
+				distr_per_step.append(int(plug))
 			except ValueError:
 				print line
-	# print me the top 100 most active users
-	od = OrderedDict(sorted(distr.items(), key=lambda x: x[1], reverse=True))
+			try:
+				main_id, step_id = job_id.split('.')
+			except ValueError as e:
+				main_id = job_id
+			distr_per_job[main_id] += int(plug)
 
-	s = 0
-	for i in od.items():
-		print i
-		s += 1
-		if s == 100:
-			break
+	print min(distr_per_step), max(distr_per_step)
 
-	return distr.values()
+	print min(distr_per_job.values()), max(distr_per_job.values())
+
+	return distr_per_step
+	#return distr_per_job.values()
+
+#read_in_data()
 
 def hist_plot_data():
 
@@ -68,15 +73,32 @@ def create_distribution(x):
 
 	d = defaultdict(int)
 	for el in x:
-		d[el] += 1
+		d[int(el)] += 1
 	return d
 
-def simple_plot_data():
 
-	d = create_distribution(read_in_data())
-	#print d[0]
-	d_zero = [i for i in d.keys() if d[i] == 0]
-	print d_zero
+def test_plot_data():
+
+	distr = read_in_data()
+	dd = {'plug': distr}
+	data = pd.DataFrame(data=dd)
+
+	print(data.describe())
+	#data.boxplot()
+	data.hist()
+
+	plt.show()
+
+#test_plot_data()
+
+
+def plot_data(lab='', xlab='plug value in K', ylab = '# jobs', \
+	fname = 'distr_of_distr_plug_per_job_step_log.eps', col='coral', \
+	s=22, Move=0.00003, input_file='plug_per_job.csv'):
+
+	d = create_distribution(read_in_data(input_file))
+
+	d = create_distribution(d.values())
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -89,56 +111,8 @@ def simple_plot_data():
 	mu = np.mean(x)
 	sigma = np.std(x)
 	median = np.median(x)
-
-
 	
-	ax.scatter(x,y)
-
-	ax.set_xscale('log')
-	ax.set_yscale('log')
-
-
-	plt.legend(frameon=False, fontsize=16)
-
-	plt.show()
-
-
-def test_plot_data():
-
-	distr = read_in_data()
-	dd = {'jobs': distr}
-	data = pd.DataFrame(data=dd)
-
-	print(data.describe())
-	#data.boxplot()
-	#data.hist()
-
-	plt.show()
-
-
-def plot_data(lab='', xlab='# jobs sent', ylab = '# of users', \
-	fname = 'distr_all_jobs_per_user_v3.png', col='darkblue', \
-	s=12, Move=0.00003, input_file='all_job_users.csv'):
-
-	SS = read_in_data()
-	d = create_distribution(SS)
-
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
-
-	x = np.array(d.keys())
-	y =  np.array(d.values())
-	print 'xaxis lenght is ', np.amax(x)
-	print 'yaxis lenght is ' , np.amax(y), \
-	 ' and total elements are ', np.sum(y)
-	mu = np.mean(SS)
-	sigma = np.std(SS)
-	median = np.median(SS)
-
-	pt = pd.DataFrame({'user # jobs':SS})
-	print(pt.describe())
-	
-	ax.scatter(x,y,color=col,s=10.5,edgecolor='none')
+	ax.scatter(x+1,y,color=col,s=s,edgecolor='none')
 
 	ax.set_xscale('log')
 	ax.set_yscale('log')
@@ -175,7 +149,7 @@ def plot_data(lab='', xlab='# jobs sent', ylab = '# of users', \
  	%(mu, median, sigma)
  	# place a text box in upper left in axes coords
  	# these are matplotlib.patch.Patch properties
-	ax.text(0.2+Move, 0.95, textstr, transform=ax.transAxes,\
+	ax.text(0.43+Move, 0.95, textstr, transform=ax.transAxes,\
 		fontsize=14, verticalalignment='top', color=col) #bbox=props)
 
 	plt.grid(True)

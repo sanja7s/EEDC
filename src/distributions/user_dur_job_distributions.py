@@ -62,7 +62,7 @@ def read_in_data(f_in = 'job_dur_per_user.csv'):
 		for job_id in user_jobs[user]:
 			user_tot_job_dur[user] += distr[job_id]
 
-	print user_tot_job_dur
+	#print user_tot_job_dur
 
 	user_avg_job_dur = defaultdict(int)
 	for user in user_jobs:
@@ -72,10 +72,10 @@ def read_in_data(f_in = 'job_dur_per_user.csv'):
 			cnt += 1
 		user_avg_job_dur[user] /= float(cnt)
 
-	print user_avg_job_dur
+	#print user_avg_job_dur
 
-	#return user_tot_job_dur.values()
-	return user_avg_job_dur.values()
+	return user_tot_job_dur.values()
+	#return user_avg_job_dur.values()
 	
 
 
@@ -89,18 +89,18 @@ def create_distribution(x):
 
 	d = defaultdict(int)
 	for el in x:
-		d[int(el/360)] += 1
+		d[int(el/86400)] += 1
 	return d
 
 def test_plot_data():
 
-	distr = read_in_data_whole_jobs()
-	#distr = read_in_data()
-	dd = {'dur': distr}
+	distr = read_in_data()
+	dur_hr = [d/86400 for d in distr]
+	dd = {'dur': dur_hr}
 	data = pd.DataFrame(data=dd)
 
 	print(data.describe())
-	#data.boxplot()
+	data.boxplot()
 	#data.hist()
 
 	plt.show()
@@ -111,13 +111,14 @@ def test_plot_data():
 	#ts.plot()
 	#plt.show()
 
-#test_plot_data()
+test_plot_data()
 
-def plot_data(lab='', xlab='avg job duration (hr)', ylab = '# of users', \
-	fname = 'avg_job_dur_per_user_hr.png', col='red', \
+def plot_data(lab='', xlab='tot job duration (day)', ylab = '# of users', \
+	fname = 'tot_job_dur_per_user_day_v3.png', col='red', \
 	s=12, Move=0.00003):
 
-	d = create_distribution(read_in_data())
+	SS = read_in_data()
+	d = create_distribution(SS)
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -127,9 +128,12 @@ def plot_data(lab='', xlab='avg job duration (hr)', ylab = '# of users', \
 	print 'xaxis lenght is ', np.amax(x)
 	print 'yaxis lenght is ' , np.amax(y), \
 	 ' and total elements are ', np.sum(y)
-	mu = np.mean(x)
-	sigma = np.std(x)
-	median = np.median(x)
+
+	SS_hr = [ss / 3600 for ss in SS]
+	SS_day = [ss / 86400 for ss in SS]
+	mu = np.mean(SS_day)
+	sigma = np.std(SS_day)
+	median = np.median(SS_day)
 	
 	ax.scatter(x+1,y,color=col,s=s,edgecolor='none',label=lab)
 
@@ -190,7 +194,7 @@ def plot_data(lab='', xlab='avg job duration (hr)', ylab = '# of users', \
 		inset_axes.set_xscale('log')
 		inset_axes.set_yscale('log')
 
-	inset(x,y+1,col)
+	inset(x,y,col)
 
 	plt.grid(True)
 
@@ -199,5 +203,4 @@ def plot_data(lab='', xlab='avg job duration (hr)', ylab = '# of users', \
 
 
 
-
-plot_data()
+#plot_data()
