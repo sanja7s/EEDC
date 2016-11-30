@@ -38,7 +38,26 @@ def create_distribution(x):
 
 	d = defaultdict(int)
 	for el in x:
-		d[int(100*el)] += 1
+		d[int(el)] += 1
+	return d
+
+def create_distribution_mem_GB(x):
+	d = defaultdict(int)
+	for el in x:
+		# blocks * 1024 for bytes 
+
+		# bytes / 1073741824 for GB
+		d[int(el*1024/1073741824)] += 1
+	return d
+
+def create_distribution_mem_MB(x):
+	d = defaultdict(int)
+	for el in x:
+		# blocks * 1024 for bytes 
+
+		# bytes / 1073741824 for MB
+		d[int(el*1024/1048576)] += 1
+
 	return d
 
 # here we read in all the variables assigned to the node,
@@ -121,7 +140,6 @@ def calculate_avg_data(d):
 			a[node][k] = [avg, med, stdev, norm_stdev]
 	return a
 
-
 def save_avg_data(the_node_type, the_avg_type, a):
 	# each average type in one file with 22 variables
 	# as this is how we can compare the nodes best then
@@ -155,7 +173,6 @@ def save_avg_data(the_node_type, the_avg_type, a):
 				'{20}', '{21}', '{22}' \n".format(node, m1, m2, m3, m4, \
 				m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16,\
 				 m17, m18, m19, m20, m21, m22))
-
 
 def save_all():
 	for the_node_type in ['Haswell', 'SandyBridge']:
@@ -215,7 +232,7 @@ def plot_data(plt, the_node_type='Haswell', the_variable='plug',s=17,col='coral'
 
 def read_in_data_2(the_node_type, the_avg_type):
 	
-	f_out = 'FIN_' + the_node_type + '_nodes_'+the_avg_type+'_values_TEST.csv'
+	f_out = 'FIN_' + the_node_type + '_nodes_'+the_avg_type+'_values_FIN.csv'
 
 	a = defaultdict(list)
 
@@ -242,24 +259,44 @@ def read_in_data_2(the_node_type, the_avg_type):
 	return a
 
 def plot_data_2(a, b=None, the_node_type='Haswell', the_avg_type='mean', \
-		the_variable='plug',s=17,col='coral'):
+		the_variable='p',s=17,col='coral'):
 
 	fig = plt.figure()
+	ax = fig.add_subplot(111)
 
 	lab=the_node_type + ' nodes'
-	xlab=the_variable + ' value'
+	if the_variable in ['id7s', 'us', 'sy', 'wa']:
+		xlab=the_variable + ' value (in % of CPU time)'
+	else:
+		xlab=the_variable + ' value'
 	ylab = '# nodes'
-	fname = 'other_variables/' + the_node_type + '/' \
+	fname = 'other_variables_7s/' + the_node_type + '/' \
 			+ the_node_type +'_distr_of_node_' + \
 			the_avg_type + '_' + the_variable + '.png'
 
 	if the_node_type == 'both':
-		d1 = create_distribution(a)
-		d2 = create_distribution(b)
+		if the_variable in ['free', 'cache']:
+			d1 = create_distribution_mem_GB(a)
+			d2 = create_distribution_mem_GB(b)
+			xlab=the_variable + ' value' + ' (in GB)'
+		elif the_variable in ['swpd', 'buff']:
+			d1 = create_distribution_mem_MB(a)
+			d2 = create_distribution_mem_MB(b)
+			xlab=the_variable + ' value' + ' (in MB)'
+		else:
+			d1 = create_distribution(a)
+			d2 = create_distribution(b)
 	else:
-		d = create_distribution(a)
+		if the_variable in ['free', 'cache']:
+			d = create_distribution_mem_GB(a)
+			xlab=the_variable + ' value' + ' (in GB)'
+		elif the_variable in ['swpd', 'buff']:
+			d = create_distribution_mem_MB(a)
+			xlab=the_variable + ' value' + ' (in MB)'
+		else:
+			d = create_distribution(a)
 
-	ax = fig.add_subplot(111)
+	
 	if the_node_type == 'both':
 		x1 = np.array(d1.keys())
 		y1 =  np.array(d1.values())
@@ -283,8 +320,11 @@ def plot_data_2(a, b=None, the_node_type='Haswell', the_avg_type='mean', \
 		
 	plt.xlabel(xlab)
 	plt.ylabel(ylab)
-	#ax.set_xscale('log')
-	#ax.set_yscale('log')
+	if the_variable in ['swpd', 'buff', 'bi', 'bo']:
+		ax.set_xscale('symlog')
+		ax.set_yscale('symlog')
+		plt.xlim(xmin=-1)
+		plt.ylim(ymin=-1)
 	plt.grid(True)
 
 	handles, labels = ax.get_legend_handles_labels()
@@ -295,14 +335,13 @@ def plot_data_2(a, b=None, the_node_type='Haswell', the_avg_type='mean', \
 
 
 def plot_all():
-	"""
-	for the_node_type in ['Haswell', 'SandyBridge']:
+	
+	for the_node_type in ['SandyBridge']:
 		for the_avg_type in ['mean', 'median', 'stdev', 'norm_stdev']:
 			a = read_in_data_2(the_node_type, the_avg_type)
 			for k in a.keys():
 				plot_data_2(a[k], None, the_node_type, the_avg_type, \
 					the_variable=k,s=17,col='coral')
-	"""
 	# both			
 	for the_avg_type in ['mean', 'median', 'stdev', 'norm_stdev']:
 		a = read_in_data_2('Haswell', the_avg_type)
@@ -310,6 +349,23 @@ def plot_all():
 		for k in a.keys():
 			plot_data_2(a[k], b[k], 'both', the_avg_type, \
 				the_variable=k,s=17,col='coral')
+	
+def plot_one(the_variable):
+	
+	for the_node_type in ['SandyBridge', 'Haswell']:
+		for the_avg_type in ['mean', 'median', 'stdev', 'norm_stdev']:
+			a = read_in_data_2(the_node_type, the_avg_type)
+			plot_data_2(a[the_variable], None, the_node_type, the_avg_type, \
+					the_variable=the_variable,s=17,col='coral')
+	# both			
+	
+	for the_avg_type in ['mean', 'median', 'stdev', 'norm_stdev']:
+		a = read_in_data_2('Haswell', the_avg_type)
+		b = read_in_data_2('SandyBridge', the_avg_type)
+		plot_data_2(a[the_variable], b[the_variable], 'both', the_avg_type, \
+				the_variable=the_variable,s=17,col='coral')
+	
 
-
-plot_all()
+#plot_all()
+plot_one('r')
+plot_one('b')
