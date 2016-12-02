@@ -367,5 +367,58 @@ def plot_one(the_variable):
 	
 
 #plot_all()
-plot_one('r')
-plot_one('b')
+#plot_one('r')
+#plot_one('b')
+
+
+def find_extremes_in_data_2(the_node_type, the_avg_type, the_variable, max_limit, min_limit):
+	
+	f_out = 'FIN_' + the_node_type + '_nodes_'+the_avg_type+'_values_FIN.csv'
+
+	a = defaultdict(list)
+
+	with open(f_out, 'r') as f:
+		headline = f.readline()
+		h = headline.split('\'')
+		h1 = [x for x in h if x.strip() != ',' and x.strip() != '']
+		h1 = h1[1:]
+		#print h1
+		for line in f:
+			n, node, n, m1, n, m2, n, m3, n, m4, n, m5, n,\
+			 m6, n, m7, n, m8, n, m9, n, m10, n, m11, \
+			n, m12, n, m13, n, m14, n, m15, n, m16, n, m17,\
+			 n, m18, n, m19, n, m20, n, m21, n, m22, n\
+			= line.split('\'')
+
+			avg_values = [m1, m2, m3, m4, m5, m6, m7, m8, m9,\
+				 m10, m11, m12, m13, m14, m15, m16,\
+				 m17, m18, m19, m20, m21, m22]
+	
+			for k in h1:
+				a[k].append((node,float(avg_values[h1.index(k)])))
+
+	for el in a[the_variable]:
+		if the_variable in ['free', 'cache']:
+			GB_val = int(el[1]*1024/1073741824)
+			if GB_val > max_limit:
+				print el, GB_val
+		elif the_variable in ['us', 'cs', 'b', 'r', 'bi', 'bo', 'in1']:
+			pct_val = int(el[1])
+			
+			if pct_val < min_limit:
+				print el[0]
+			"""
+			if pct_val > max_limit:
+				print el[0]
+			
+			"""
+			
+
+#find_extremes_in_data_2('Haswell', 'mean', 'us', 90, 25)
+find_extremes_in_data_2('SandyBridge', 'mean', 'in1', 5, 1)
+#find_extremes_in_data_2('Haswell', 'mean', 'r', 30, 5)
+
+#find_extremes_in_data_2('SandyBridge', 'mean', 'bo', 100, 10)
+
+
+
