@@ -78,9 +78,13 @@ def find_nodes_per_class():
 	the_node_classes =  defaultdict(list)
 	for node_id in node_ids:
 		the_node_classes[node_classes[node_id]].append(node_ids[node_id])
+		if node_ids[node_id] == 'c77':
+				print 'MY CLASS IS ', node_classes[node_id]
 
 	for the_class in the_node_classes:
 		print the_class, len(the_node_classes[the_class])
+		if the_class == 2:
+			print the_node_classes[the_class]
 	return the_node_classes
 
 def find_node_types_per_class():

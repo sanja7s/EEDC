@@ -12,7 +12,7 @@ import numpy as np
 from collections import defaultdict, OrderedDict
 from numpy import random
 
-IN_DIR = "../../data/nodes/prediction/weka"
+IN_DIR = "../../data/prediction/Haswell10/"
 os.chdir(IN_DIR)
 
 def node_type(node):
@@ -48,49 +48,32 @@ def node_type(node):
 
 #print len(read_in_node_types())
 
-def read_in_data_per_node_and_save_timeseries_arff(node='c370'):
-	
-	f_in = 'node_' + node + '_vmstat_timestamp.csv'
-	f_out = 'node_' + node + '_vmstat_timestamps.arff'
+def test_RAPL_negatives(nodeset = "Haswell10"):
 
-	arff_header = \
-	"@RELATION " + node + "_traintest" + '\n' + '\n' + \
-	"@ATTRIBUTE Timestamp DATE \"yyyy-MM-dd HH:mm:ss\" " + '\n' + \
-	"@ATTRIBUTE r NUMERIC" + '\n' + \
-	"@ATTRIBUTE b NUMERIC" + '\n' + \
-	"@ATTRIBUTE swpd NUMERIC" + '\n' + \
-	"@ATTRIBUTE free NUMERIC" + '\n' + \
-	"@ATTRIBUTE cache NUMERIC" + '\n' + \
-	"@ATTRIBUTE si NUMERIC" + '\n' + \
-	"@ATTRIBUTE so NUMERIC" + '\n' + \
-	"@ATTRIBUTE bi NUMERIC" + '\n' + \
-	"@ATTRIBUTE bo NUMERIC" + '\n' + \
-	"@ATTRIBUTE in1 NUMERIC" + '\n' + \
-	"@ATTRIBUTE cs NUMERIC" + '\n' + \
-	"@ATTRIBUTE us NUMERIC" + '\n' + \
-	"@ATTRIBUTE sy NUMERIC" + '\n' + \
-	"@ATTRIBUTE id NUMERIC" + '\n' + \
-	"@ATTRIBUTE wa NUMERIC" + '\n' + \
-	"@ATTRIBUTE plug NUMERIC" + '\n' + '\n' + \
-	"@DATA" + '\n' 
+	f_in = 'node_' + nodeset + '_vmstat_RAPL_timestamp.csv'
+	f_out = 'cleaned_node_' + nodeset + '_vmstat_RAPL_timestamp.csv'
+
+	i = 0
+	j = 0
 
 	with open(f_in, 'r') as f:
 		with open(f_out, 'w') as fo:
-			fo.write(arff_header)
 			for line in f:
-				ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug \
-				 = line.split(',')
+				ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, jobs, plug \
+				 = line.split(';')
+				i += 1
+				if float(c1) >= 0 and float(c2) >= 0 and float(d1) >= 0 and float(d2) >= 0 :
+					fo.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20}"\
+					.format(ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, plug))
+				else:
+					j += 1
+	print 'Negative instances ', j, ' out of total ', i
 
-				t = dt.datetime.fromtimestamp(int(ts))
-
-				fo.write("\"{0}\",{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}"\
-					.format(t, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug))
-
-def read_in_data_per_node_and_save_train_test(node='c77'):
+def sample_data_per_node_and_save_train_test(nodeset = "Haswell10"):
 
 	def the_header(T):
 		arff_header = \
-		"@RELATION " + node + T + '\n' + '\n' + \
+		"@RELATION " + nodeset + T + '\n' + '\n' + \
 		"@ATTRIBUTE r NUMERIC" + '\n' + \
 		"@ATTRIBUTE b NUMERIC" + '\n' + \
 		"@ATTRIBUTE swpd NUMERIC" + '\n' + \
@@ -106,43 +89,45 @@ def read_in_data_per_node_and_save_train_test(node='c77'):
 		"@ATTRIBUTE sy NUMERIC" + '\n' + \
 		"@ATTRIBUTE id NUMERIC" + '\n' + \
 		"@ATTRIBUTE wa NUMERIC" + '\n' + \
+		"@ATTRIBUTE cpu1 REAL" + '\n' + \
+		"@ATTRIBUTE cpu2 REAL" + '\n' + \
+		"@ATTRIBUTE dram1 REAL" + '\n' + \
+		"@ATTRIBUTE dram2 REAL" + '\n' + \
 		"@ATTRIBUTE plug NUMERIC" + '\n' + '\n' + \
 		"@DATA" + '\n' 
 		return arff_header
 	
-	f_in = 'node_' + node + '_vmstat_timestamp.csv'
-	f_out_1 = 'node_' + node + '_vmstat_train.arff'
-	f_out_2 = 'node_' + node + '_vmstat_test.arff'
+	f_in = 'cleaned_node_' + nodeset + '_vmstat_RAPL_timestamp.csv'
+	f_out_1 = 'sample_nodes_' + nodeset + '_vmstat_RAPL_traintest.arff'
+	#f_out_2 = 'node_' + nodeset + '_vmstat_RAPL_test.arff'
 
 	f = open(f_in, 'r')
 	TOT = len(f.read().splitlines())
 	f.close()
+	sample_size = TOT / 10
+	sample_index = np.random.randint(0, TOT, sample_size)
 
 	with open(f_in, 'r') as f:
 		print 'Total lines in the file ', TOT
 		i = 0
+		j = 0
 		with open(f_out_1, 'w') as fo1:
-			fo1.write(the_header('_train'))
+			fo1.write(the_header('_train_RAPL'))
 			for line in f:
-				ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug \
-				 = line.split(',')
+				if i in sample_index:
+					j += 1
+					ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, plug \
+					 = line.split(',')
+					fo1.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19}"\
+						.format(r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, plug))
 				i += 1
-				fo1.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}"\
-					.format(r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug))
-				if i == int(2 * TOT / 3):
-					break
-		with open(f_out_2, 'w') as fo2:
-			fo2.write(the_header('_test'))
-			for line in f:
-				ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug \
-				 = line.split(',')
-				i += 1
-				fo2.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}"\
-					.format(r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug))
-	print 'Written total lines ', i
+				if i % 10000 == 0:
+					print i
+		
 
+	print 'Written total lines ', j, 'out of ', i
 
-def read_in_data_per_node_and_save_SHUFFLE_train_test(node='c370'):
+def read_in_data_per_node_and_save_SHUFFLE_train_test(nodeset = "Haswell10"):
 
 	def the_header(T):
 		arff_header = \
@@ -166,7 +151,7 @@ def read_in_data_per_node_and_save_SHUFFLE_train_test(node='c370'):
 		"@DATA" + '\n' 
 		return arff_header
 	
-	f_in = 'node_' + node + '_vmstat_timestamp.csv'
+	f_in = 'cleaned_node_' + node + '_vmstat_timestamp.csv'
 	f_out_1 = 'node_' + node + '_vmstat_SHUFFLE_train.arff'
 	f_out_2 = 'node_' + node + '_vmstat_SHUFFLE_test.arff'
 
@@ -180,25 +165,25 @@ def read_in_data_per_node_and_save_SHUFFLE_train_test(node='c370'):
 
 
 	with open(f_out_1, 'w') as fo1:
-		fo1.write(the_header('_SHUFFLE_train'))
+		fo1.write(the_header('_SHUFFLE_train_RAPL'))
 		for i in range(n1):
 			line = F[i]
-			ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug \
-			 = line.split(',')
+			ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, plug \
+				 = line.split(',')
 			i += 1
-			fo1.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}\n"\
-				.format(r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug))
+			fo1.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19}"\
+					.format(r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, plug))
 
 	print 'Test set size ', TOT-n1
 	with open(f_out_2, 'w') as fo2:
-		fo2.write(the_header('_SHUFFLE_test'))
+		fo2.write(the_header('_SHUFFLE_test_RAPL'))
 		for i in range(n1,TOT):
 			line = F[i]
-			ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug \
-			 = line.split(',')
+			ts, r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, plug \
+				 = line.split(',')
 			i += 1
-			fo2.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}\n"\
-				.format(r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, plug))
+			fo2.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19}"\
+					.format(r, b, swpd, free, cache, si, so, bi, bo, in1, cs, us, sy, id7, wa, c1, c2, d1, d2, plug))
 
 	print 'Written total lines ', i
 
@@ -206,4 +191,5 @@ def read_in_data_per_node_and_save_SHUFFLE_train_test(node='c370'):
 
 #read_in_data_per_node_and_save_train_test()
 
-read_in_data_per_node_and_save_timeseries_arff()
+#test_RAPL_negatives()
+sample_data_per_node_and_save_train_test()
