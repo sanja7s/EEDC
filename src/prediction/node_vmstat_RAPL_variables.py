@@ -12,7 +12,7 @@ import numpy as np
 from collections import defaultdict, OrderedDict
 from numpy import random
 
-IN_DIR = "../../data/nodes/prediction/weka/RAPL"
+IN_DIR = "../../data/prediction/prediction/weka/RAPL"
 os.chdir(IN_DIR)
 
 def node_type(node):
